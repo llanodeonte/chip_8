@@ -1,11 +1,11 @@
 //Module Todo:
 // Currently populating GUI one pixel at a time (BAD)
 // Working to implement a texture update method for the GUI using RGBA (GOOD)
-// Refer to texture variable at line 60 for notes on toggling between legacy and RGBA GUI
+// Refer to texture variable at line 61 for notes on toggling between legacy and RGBA GUI
 
 use sdl2::{
     rect::Rect,
-    render::Canvas,
+    render::{Canvas, Texture},
     video::Window,
     pixels::Color,
     pixels::PixelFormatEnum,
@@ -39,7 +39,8 @@ pub const FONT_SET: [u8; 80] = [
 ];
 
 pub struct Display {
-    canvas: Canvas<Window>
+    canvas: Canvas<Window>,
+    // texture: Texture<'static>, // <'static> denotes some lifetime expectancy (Need more research)
 }
 
 impl Display {
@@ -57,18 +58,21 @@ impl Display {
             .build()
             .expect("Failed to build canvas");
         let texture_creator = canvas.texture_creator();
-        let mut texture = texture_creator
+        let texture = texture_creator // When borrowing texture, either texture or texture_creator does not live long enough
+            // Toggle Display struct's texture field on
             // Toggle to 4x vram with an inner array of 4 u8s per pixel for RGBA color data
             // Toggle to 4x vram write function in DXYN
-            // Toggle to texture render for reading vram data to screen
-            .create_texture_streaming(PixelFormatEnum::RGBA8888, CHIP8_WIDTH, CHIP8_HEIGHT);
+            // Toggle to either RGBA renderer in draw function below
+            .create_texture_streaming(PixelFormatEnum::RGBA8888, CHIP8_WIDTH, CHIP8_HEIGHT)
+            .expect("Failed to create texture");
 
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
         canvas.present();
 
         Self {
-            canvas
+            canvas,
+            // texture,
         }
     }
 
@@ -77,7 +81,13 @@ impl Display {
         self.canvas.clear();
         self.canvas.set_draw_color(Color::RGB(255, 255, 255));
 
-        // RGBA VRAM Test Display
+        // Update texture with RGBA VRAM contents
+        // Build code here
+
+        // // Copy current texture contents to canvas for display
+        // self.canvas.copy(&self.texture, None, None);
+        
+        // // RGBA VRAM Pixel by Pixel Test Display
         // for width in 0..CHIP8_HEIGHT {
         //     for pixel in 0..(CHIP8_WIDTH * 4) {
         //         // if (pixel % 4) == 0 {

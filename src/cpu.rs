@@ -27,8 +27,8 @@ pub struct Cpu {
     // pub vram: [[u8; 64 * 4]; 32], // RGBA VRAM
     pub vram: [[u8; 64]; 32], //Legacy VRAM
     pub vram_update: bool,
-    dt: u8, //Todo: Implement Delay Timer
-    st: u8, //Todo: Implement Sound Timer
+    // dt: u8, //Todo: Implement Delay Timer
+    // st: u8, //Todo: Implement Sound Timer
 }
 
 impl Cpu {
@@ -42,8 +42,8 @@ impl Cpu {
             // vram: [[0; 64 * 4]; 32], // RGBA VRAM
             vram: [[0; 64]; 32], // Legacy VRAM
             vram_update: false,
-            dt: 0,
-            st: 0,
+            // dt: 0,
+            // st: 0,
         }
     }
 
@@ -131,18 +131,18 @@ impl Cpu {
         }
     }
 
-    fn opcode_00ee(&mut self) {
-        panic!("Unknown instruction: 00EE at PC {:X?}", self.pc);
-    }
+    // fn opcode_00ee(&mut self) {
+    //     panic!("Unknown instruction: 00EE at PC {:X?}", self.pc);
+    // }
 
     // Jump to location nnn
     fn opcode_1nnn(&mut self, nnn: usize) {
         self.set_pc(ProgramCounter::Jump(nnn));
     }
 
-    fn opcode_2nnn(&mut self) {
-        panic!("Unknown instruction: 2NNN at PC {:X?}", self.pc);
-    }
+    // fn opcode_2nnn(&mut self) {
+    //     panic!("Unknown instruction: 2NNN at PC {:X?}", self.pc);
+    // }
 
     // Skip pc if vreg x != kk
     fn opcode_4xkk (&mut self, x: usize, kk: u8) {
@@ -174,7 +174,7 @@ impl Cpu {
         let y_coord = self.read_v(y) as usize;
         // println!("Coords for x: {:?} and y: {:?}", x_coord, y_coord);
 
-        // RGBA VRAM
+        // // RGBA VRAM
         // for byte in 0..n {
         //     for bit in 0..8 {
         //         for rgba in 0..4 {
