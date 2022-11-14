@@ -107,7 +107,9 @@ impl Cpu {
             //(0x00, 0x00, 0x0E, 0x0E) => self.opcode_00ee(),
             (0x01,    _,    _,    _) => self.opcode_1nnn(nnn),
             //(0x02,    _,    _,    _) => self.instr_2nnn(),
+            (0x03,    _,    _,    _) => self.opcode_3xkk(x, kk),
             (0x04,    _,    _,    _) => self.opcode_4xkk(x, kk),
+            (0x05,    _,    _,    _) => self.opcode_5xy0(x, y),
             (0x06,    _,    _,    _) => self.opcode_6xkk(x, kk),
             (0x07,    _,    _,    _) => self.opcode_7xkk(x, kk),
             (0x0A,    _,    _,    _) => self.opcode_annn(nnn),
@@ -144,10 +146,23 @@ impl Cpu {
     //     panic!("Unknown instruction: 2NNN at PC {:X?}", self.pc);
     // }
 
-    // Skip pc if vreg x != kk
+    // Skip next instruction if Vx = kk
+    fn opcode_3xkk (&mut self, x: usize, kk: u8) {
+        if self.read_v(x) == kk {
+            self.set_pc(ProgramCounter::Next);
+        }
+    }
+
+    // Skip next instruction if Vx != kk
     fn opcode_4xkk (&mut self, x: usize, kk: u8) {
-        let vreg = self.read_v(x);
-        if vreg != kk {
+        if self.read_v(x) != kk {
+            self.set_pc(ProgramCounter::Next);
+        }
+    }
+
+    // Skip next instruction if Vx = Vy
+    fn opcode_5xy0 (&mut self, x: usize, y: usize) {
+        if self.read_v(x) == self.read_v(y) {
             self.set_pc(ProgramCounter::Next);
         }
     }
@@ -160,7 +175,7 @@ impl Cpu {
     // Set Vx = Vx + kk
     fn opcode_7xkk(&mut self, x: usize, kk: u8) {
         let vreg = self.read_v(x);
-        self.write_v(x, vreg + kk);
+        self.write_v(x, vreg + kk); // Attempts to add with overflow
     }
 
     // Set i to nnn
