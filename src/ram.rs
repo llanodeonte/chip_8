@@ -5,7 +5,7 @@
 
 // use crate::cpu::Cpu;
 
-pub const RAM_SIZE: usize = 0xFFF; //0xFFF = 4096
+const RAM_SIZE: usize = 0xFFF; //0xFFF = 4096
 
 pub struct Ram {
     pub mem: [u8; RAM_SIZE],
