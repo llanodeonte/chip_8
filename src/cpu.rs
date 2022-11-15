@@ -117,6 +117,7 @@ impl Cpu {
             (0x08,    _,    _, 0x02) => self.opcode_8xy2(x, y),
             (0x08,    _,    _, 0x03) => self.opcode_8xy3(x, y),
             (0x08,    _,    _, 0x04) => self.opcode_8xy4(x, y),
+            (0x08,    _,    _, 0x05) => self.opcode_8xy5(x, y),
             (0x09,    _,    _, 0x00) => self.opcode_9xy0(x, y),
             (0x0A,    _,    _,    _) => self.opcode_annn(nnn),
             (0x0D,    _,    _,    _) => self.opcode_dxyn(&ram, x, y, n),
@@ -226,6 +227,18 @@ impl Cpu {
             panic!("X = {:b}, Y = {:b}, Sum = {:b}", x, y, sum);
         }
         self.write_v(x, sum as u8);
+    }
+
+    // If vx > vy, set vf = 1 and set vx = vx - vy
+    // Else,       set vf = 0 and set vx = vx - vy
+    fn opcode_8xy5(&mut self, x: usize, y: usize) {
+        if self.read_v(x) > self.read_v(y) {
+            self.write_v(0xF, 1);
+            self.write_v(x, self.read_v(x) - self.read_v(y));
+        } else {
+            self.write_v(0xF, 0);
+            self.write_v(x, self.read_v(x).wrapping_sub(self.read_v(y)));
+        }
     }
 
     // If vx != vy, skip the next opcode
