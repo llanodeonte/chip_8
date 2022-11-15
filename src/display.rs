@@ -4,17 +4,19 @@
 // Refer to texture variable at line 61 for notes on toggling between legacy and RGBA GUI
 
 use sdl2::{
-    rect::Rect,
+    // rect::Rect,
     render::{Canvas, Texture},
     video::Window,
     pixels::Color,
-    pixels::PixelFormatEnum,
+    // pixels::PixelFormatEnum,
 };
 
-use crate::cpu::Cpu;
+use crate::{
+    cpu::Cpu,
+    CHIP8_WIDTH,
+    CHIP8_HEIGHT,
+};
 
-const CHIP8_WIDTH: u32 = 64;
-const CHIP8_HEIGHT: u32 = 32;
 const SCALE_FACTOR: u32 = 20;
 const DISPLAY_WIDTH: u32 = CHIP8_WIDTH * SCALE_FACTOR;
 const DISPLAY_HEIGHT: u32 = CHIP8_HEIGHT * SCALE_FACTOR;
@@ -39,8 +41,7 @@ pub const FONT_SET: [u8; 80] = [
 ];
 
 pub struct Display {
-    canvas: Canvas<Window>,
-    // texture: Texture<'static>, // <'static> denotes some lifetime expectancy (Need more research)
+    pub canvas: Canvas<Window>,
 }
 
 impl Display {
@@ -57,14 +58,6 @@ impl Display {
             .into_canvas()
             .build()
             .expect("Failed to build canvas");
-        let texture_creator = canvas.texture_creator();
-        let texture = texture_creator // When borrowing texture, either texture or texture_creator does not live long enough
-            // Toggle Display struct's texture field on
-            // Toggle to 4x vram with an inner array of 4 u8s per pixel for RGBA color data
-            // Toggle to 4x vram write function in DXYN
-            // Toggle to either RGBA renderer in draw function below
-            .create_texture_streaming(PixelFormatEnum::RGBA8888, CHIP8_WIDTH, CHIP8_HEIGHT)
-            .expect("Failed to create texture");
 
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
@@ -72,46 +65,33 @@ impl Display {
 
         Self {
             canvas,
-            // texture,
         }
     }
 
-    pub fn draw(&mut self, cpu: &Cpu) {
+    pub fn draw(&mut self, cpu: &Cpu, texture: &mut Texture) {
         self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         self.canvas.clear();
         self.canvas.set_draw_color(Color::RGB(255, 255, 255));
 
         // Update texture with RGBA VRAM contents
-        // Build code here
+        texture.update(None, cpu.vram.as_slice(), CHIP8_WIDTH as usize * 4)
+            .expect("Failed to update texture");
 
-        // // Copy current texture contents to canvas for display
-        // self.canvas.copy(&self.texture, None, None);
+        // Copy current texture contents to canvas
+        self.canvas.copy(texture, None, None)
+            .expect("Failed to copy texture to canvas");
         
-        // // RGBA VRAM Pixel by Pixel Test Display
+        // // Legacy VRAM Display
         // for width in 0..CHIP8_HEIGHT {
-        //     for pixel in 0..(CHIP8_WIDTH * 4) {
-        //         // if (pixel % 4) == 0 {
-        //             if cpu.vram[width as usize][pixel as usize] == 255 {
-        //                 let x_coord = (pixel * SCALE_FACTOR) as i32;
-        //                 let y_coord = (width * SCALE_FACTOR) as i32;
-        //                 let pixel = Rect::new(x_coord, y_coord, SCALE_FACTOR, SCALE_FACTOR);
-        //                 self.canvas.fill_rect(pixel).expect("Failed to draw rect");
-        //             }
-        //         // }
+        //     for pixel in 0..CHIP8_WIDTH {
+        //         if cpu.vram[width as usize][pixel as usize] == 1 {
+        //             let x_coord = (pixel * SCALE_FACTOR) as i32;
+        //             let y_coord = (width * SCALE_FACTOR) as i32;
+        //             let pixel = Rect::new(x_coord, y_coord, SCALE_FACTOR, SCALE_FACTOR);
+        //             self.canvas.fill_rect(pixel).expect("Failed to draw rect");
+        //         }
         //     }
         // }
-
-        // Legacy VRAM Display
-        for width in 0..CHIP8_HEIGHT {
-            for pixel in 0..CHIP8_WIDTH {
-                if cpu.vram[width as usize][pixel as usize] == 1 {
-                    let x_coord = (pixel * SCALE_FACTOR) as i32;
-                    let y_coord = (width * SCALE_FACTOR) as i32;
-                    let pixel = Rect::new(x_coord, y_coord, SCALE_FACTOR, SCALE_FACTOR);
-                    self.canvas.fill_rect(pixel).expect("Failed to draw rect");
-                }
-            }
-        }
 
         self.canvas.present();
     }
