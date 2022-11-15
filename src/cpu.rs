@@ -104,14 +104,17 @@ impl Cpu {
         match opcode_nibbles {
             //Match to an instruction based on the nibbles tuple values
             (0x00, 0x00, 0x0E, 0x00) => self.opcode_00e0(),
-            //(0x00, 0x00, 0x0E, 0x0E) => self.opcode_00ee(),
+            (0x00, 0x00, 0x0E, 0x0E) => self.opcode_00ee(),
             (0x01,    _,    _,    _) => self.opcode_1nnn(nnn),
-            //(0x02,    _,    _,    _) => self.instr_2nnn(),
+            (0x02,    _,    _,    _) => self.opcode_2nnn(nnn),
             (0x03,    _,    _,    _) => self.opcode_3xkk(x, kk),
             (0x04,    _,    _,    _) => self.opcode_4xkk(x, kk),
-            (0x05,    _,    _,    _) => self.opcode_5xy0(x, y),
+            (0x05,    _,    _, 0x00) => self.opcode_5xy0(x, y),
             (0x06,    _,    _,    _) => self.opcode_6xkk(x, kk),
             (0x07,    _,    _,    _) => self.opcode_7xkk(x, kk),
+            (0x08,    _,    _, 0x00) => self.opcode_8xy0(x, y),
+            (0x08,    _,    _, 0x01) => self.opcode_8xy1(x, y),
+            (0x09,    _,    _, 0x00) => self.opcode_9xy0(x, y),
             (0x0A,    _,    _,    _) => self.opcode_annn(nnn),
             (0x0D,    _,    _,    _) => self.opcode_dxyn(&ram, x, y, n),
             (0x0F,    _, 0x06, 0x05) => self.opcode_fx65(&ram, x),
@@ -140,18 +143,24 @@ impl Cpu {
         }
     }
 
-    // fn opcode_00ee(&mut self) {
-    //     panic!("Unknown instruction: 00EE at PC {:X?}", self.pc);
-    // }
+    // Return from a subroutine
+    fn opcode_00ee(&mut self) {
+        self.sp -= 1;
+        self.pc = self.stack[self.sp] as usize;
+        self.stack[self.sp] = 0;
+    }
 
     // Jump to location nnn
     fn opcode_1nnn(&mut self, nnn: usize) {
         self.set_pc(ProgramCounter::Jump(nnn));
     }
 
-    // fn opcode_2nnn(&mut self) {
-    //     panic!("Unknown instruction: 2NNN at PC {:X?}", self.pc);
-    // }
+    // Call subroutine at nnn
+    fn opcode_2nnn(&mut self, nnn: usize) {
+        self.stack[self.sp] = self.pc as u16;
+        self.sp += 1;
+        self.pc = nnn;
+    }
 
     // Skip next instruction if Vx = kk
     fn opcode_3xkk (&mut self, x: usize, kk: u8) {
@@ -182,6 +191,23 @@ impl Cpu {
     // Set Vx = Vx + kk
     fn opcode_7xkk(&mut self, x: usize, kk: u8) {
         self.write_v(x, self.read_v(x).wrapping_add(kk));
+    }
+
+    // Set Vx = Vy
+    fn opcode_8xy0(&mut self, x: usize, y: usize) {
+        self.write_v(x, self.read_v(y)); 
+    }
+
+    // Set Vx = Vx OR Vy
+    fn opcode_8xy1(&mut self, x: usize, y: usize) {
+        panic!("Finish 8XY1 opcode");
+    }
+
+    // Skip next instruction if Vx != Vy
+    fn opcode_9xy0(&mut self, x: usize, y: usize) {
+        if self.read_v(x) != self.read_v(y) {
+            self.set_pc(ProgramCounter::Next);
+        }
     }
 
     // Set i to nnn
