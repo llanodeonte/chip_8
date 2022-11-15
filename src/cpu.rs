@@ -150,7 +150,7 @@ impl Cpu {
         self.stack[self.sp] = 0;
     }
 
-    // Jump to location nnn
+    // Jump to address nnn
     fn opcode_1nnn(&mut self, nnn: usize) {
         self.set_pc(ProgramCounter::Jump(nnn));
     }
@@ -162,78 +162,78 @@ impl Cpu {
         self.pc = nnn;
     }
 
-    // Skip next instruction if Vx = kk
+    // If vx = kk, skip the next opcode
     fn opcode_3xkk (&mut self, x: usize, kk: u8) {
         if self.read_v(x) == kk {
             self.set_pc(ProgramCounter::Next);
         }
     }
 
-    // Skip next instruction if Vx != kk
+    // If vx != kk, skip the next opcode
     fn opcode_4xkk (&mut self, x: usize, kk: u8) {
         if self.read_v(x) != kk {
             self.set_pc(ProgramCounter::Next);
         }
     }
 
-    // Skip next instruction if Vx = Vy
+    // If vx = vy, skip the next opcode
     fn opcode_5xy0 (&mut self, x: usize, y: usize) {
         if self.read_v(x) == self.read_v(y) {
             self.set_pc(ProgramCounter::Next);
         }
     }
 
-    // Write kk to vreg x
+    // Set vx = kk
     fn opcode_6xkk(&mut self, x: usize, kk: u8) {
         self.write_v(x, kk);
     }
 
-    // Set Vx = Vx + kk
+    // Set vx = vx + kk
     fn opcode_7xkk(&mut self, x: usize, kk: u8) {
         self.write_v(x, self.read_v(x).wrapping_add(kk));
     }
 
-    // Set Vx = Vy
+    // Set vx = vy
     fn opcode_8xy0(&mut self, x: usize, y: usize) {
         self.write_v(x, self.read_v(y)); 
     }
 
-    // Set Vx = Vx Bitwise OR Vy
+    // Set vx = vx bitwise or vy
     fn opcode_8xy1(&mut self, x: usize, y: usize) {
         self.write_v(x, self.read_v(x) | self.read_v(y));
     }
 
-    // Skip next instruction if Vx != Vy
+    // If vx != vy, skip the next opcode
     fn opcode_9xy0(&mut self, x: usize, y: usize) {
         if self.read_v(x) != self.read_v(y) {
             self.set_pc(ProgramCounter::Next);
         }
     }
 
-    // Set i to nnn
+    // Set i = nnn
     fn opcode_annn(&mut self, nnn: usize) {
         self.set_i(nnn);
     }
 
-    // Write sprite from ram[i] to vram[y][x]
+    // Write sprite from ram to vram
+    // Add detailed comments to code below
     fn opcode_dxyn(&mut self, ram: &Ram, x: usize, y: usize, n: usize) {
         let x_coord = self.read_v(x) as usize;
         let y_coord = self.read_v(y) as usize;
-        // println!("Coords for x: {:?} and y: {:?}", x_coord, y_coord);
 
         // RGBA VRAM
         for byte in 0..n {
             for bit in 0..8 {
                 for rgba in 0..4 {
                     if rgba == 3 {
-                        // RGBA VRAM Alpha Channel Write
+                        // Write A of RGBA to VRAM
                         self.vram[((y_coord + byte) * 64 * 4) + ((x_coord + bit) * 4) + (3 - rgba)] = 255;
 
                         // // Legacy VRAM Alpha Channel Write
                         // self.vram[byte + y_coord][(bit * rgba) + x_coord] = 255;
                     }
                     else {
-                        // RGBA VRAM Bit Color Write
+                        // Write RGB of RGBA to VRAM
                         self.vram[((y_coord + byte) * 64 * 4) + ((x_coord + bit) * 4) + (3 - rgba)] =
                             ((ram.mem[self.i + byte] >> (7 - bit)) & 0b0000_0001) * 255;
 
@@ -263,9 +263,9 @@ impl Cpu {
         // self.vram_update = true;
     }
 
-    // Write values from range of ram[I to I + X] into registers V0 to VX
+    // Write values from ram at i through i+x into v0 through vx
     fn opcode_fx65(&mut self, ram: &Ram, x: usize) {
-        for vreg in 0..x + 1 {
+        for vreg in 0..(x + 1) {
             let data = ram.mem[self.i + vreg];
             self.write_v(x, data);
         }
