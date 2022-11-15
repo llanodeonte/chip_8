@@ -198,9 +198,9 @@ impl Cpu {
         self.write_v(x, self.read_v(y)); 
     }
 
-    // Set Vx = Vx OR Vy
+    // Set Vx = Vx Bitwise OR Vy
     fn opcode_8xy1(&mut self, x: usize, y: usize) {
-        panic!("Finish 8XY1 opcode");
+        self.write_v(x, self.read_v(x) | self.read_v(y));
     }
 
     // Skip next instruction if Vx != Vy
