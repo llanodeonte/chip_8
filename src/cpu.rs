@@ -225,16 +225,16 @@ impl Cpu {
         for byte in 0..n {
             for bit in 0..8 {
                 for rgba in 0..4 {
-                    if rgba == 0 {
+                    if rgba == 3 {
                         // RGBA VRAM Alpha Channel Write
-                        self.vram[((y_coord + byte) * 64 * 4) + ((x_coord + bit) * 4) + rgba] = 255;
+                        self.vram[((y_coord + byte) * 64 * 4) + ((x_coord + bit) * 4) + (3 - rgba)] = 255;
 
                         // // Legacy VRAM Alpha Channel Write
                         // self.vram[byte + y_coord][(bit * rgba) + x_coord] = 255;
                     }
                     else {
                         // RGBA VRAM Bit Color Write
-                        self.vram[((y_coord + byte) * 64 * 4) + ((x_coord + bit) * 4) + rgba] =
+                        self.vram[((y_coord + byte) * 64 * 4) + ((x_coord + bit) * 4) + (3 - rgba)] =
                             ((ram.mem[self.i + byte] >> (7 - bit)) & 0b0000_0001) * 255;
 
                         // // Legacy VRAM Bit Color Write
