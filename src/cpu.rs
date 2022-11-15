@@ -116,6 +116,7 @@ impl Cpu {
             (0x08,    _,    _, 0x01) => self.opcode_8xy1(x, y),
             (0x08,    _,    _, 0x02) => self.opcode_8xy2(x, y),
             (0x08,    _,    _, 0x03) => self.opcode_8xy3(x, y),
+            (0x08,    _,    _, 0x04) => self.opcode_8xy4(x, y),
             (0x09,    _,    _, 0x00) => self.opcode_9xy0(x, y),
             (0x0A,    _,    _,    _) => self.opcode_annn(nnn),
             (0x0D,    _,    _,    _) => self.opcode_dxyn(&ram, x, y, n),
@@ -213,6 +214,18 @@ impl Cpu {
     // Set vx = vx bitwise xor vy
     fn opcode_8xy3(&mut self, x: usize, y: usize) {
         self.write_v(x, self.read_v(x) ^ self.read_v(y));
+    }
+
+    // Set vx = vx + vy and set vf = carry bit
+    fn opcode_8xy4(&mut self, x: usize, y: usize) {
+        let sum = x + y;
+        // Check if sum overflows u8
+        if sum > 255 {
+            // Once u8 overflow is encountered, figure out carry bit handling
+            println!("Finish carry bit handling for opcode 8XY4");
+            panic!("X = {:b}, Y = {:b}, Sum = {:b}", x, y, sum);
+        }
+        self.write_v(x, sum as u8);
     }
 
     // If vx != vy, skip the next opcode
