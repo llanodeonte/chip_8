@@ -114,6 +114,7 @@ impl Cpu {
             (0x07,    _,    _,    _) => self.opcode_7xkk(x, kk),
             (0x08,    _,    _, 0x00) => self.opcode_8xy0(x, y),
             (0x08,    _,    _, 0x01) => self.opcode_8xy1(x, y),
+            (0x08,    _,    _, 0x02) => self.opcode_8xy2(x, y),
             (0x09,    _,    _, 0x00) => self.opcode_9xy0(x, y),
             (0x0A,    _,    _,    _) => self.opcode_annn(nnn),
             (0x0D,    _,    _,    _) => self.opcode_dxyn(&ram, x, y, n),
@@ -201,6 +202,11 @@ impl Cpu {
     // Set vx = vx bitwise or vy
     fn opcode_8xy1(&mut self, x: usize, y: usize) {
         self.write_v(x, self.read_v(x) | self.read_v(y));
+    }
+
+    // Set vx = vx bitwise and vy
+    fn opcode_8xy2(&mut self, x: usize, y: usize) {
+        self.write_v(x, self.read_v(x) & self.read_v(y));
     }
 
     // If vx != vy, skip the next opcode
