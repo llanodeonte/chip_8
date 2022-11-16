@@ -60,7 +60,6 @@ fn main() {
 
     ram.load_font_set();
     cartridge.load_rom(&mut ram);
-    //ram.test_ram();
 
     'running: loop {
         for event in event_pump.poll_iter() {

@@ -34,9 +34,4 @@ impl Ram {
     // pub fn write_byte(&mut self, cpu: Cpu, byte: u8) {
     //     self.mem[cpu.i] = byte;
     // }
-
-    // // Print the full contents of ram
-    // pub fn test_ram(&self) {
-    //     println!("Ram contents: {:X?}", self.mem);
-    // }
 }
