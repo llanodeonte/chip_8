@@ -1,14 +1,10 @@
 //Module Todo:
-// Currently populating GUI one pixel at a time (BAD)
-// Working to implement a texture update method for the GUI using RGBA (GOOD)
-// Refer to texture variable at line 61 for notes on toggling between legacy and RGBA GUI
+// N/A
 
 use sdl2::{
-    // rect::Rect,
     render::{Canvas, Texture},
     video::Window,
     pixels::Color,
-    // pixels::PixelFormatEnum,
 };
 
 use crate::{
@@ -81,18 +77,6 @@ impl Display {
         self.canvas.copy(texture, None, None)
             .expect("Failed to copy texture to canvas");
         
-        // // Legacy VRAM Display
-        // for width in 0..CHIP8_HEIGHT {
-        //     for pixel in 0..CHIP8_WIDTH {
-        //         if cpu.vram[width as usize][pixel as usize] == 1 {
-        //             let x_coord = (pixel * SCALE_FACTOR) as i32;
-        //             let y_coord = (width * SCALE_FACTOR) as i32;
-        //             let pixel = Rect::new(x_coord, y_coord, SCALE_FACTOR, SCALE_FACTOR);
-        //             self.canvas.fill_rect(pixel).expect("Failed to draw rect");
-        //         }
-        //     }
-        // }
-
         self.canvas.present();
     }
 }

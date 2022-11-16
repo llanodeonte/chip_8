@@ -46,13 +46,6 @@ fn main() {
     let mut cartridge = Cartridge::new();
     let mut display = Display::new(&sdl_context);
 
-    // Instructions for toggling between pixel by pixel and texture rendering
-    // Toggle 00E0, DXYN, texture.update()
-    // Toggle Display struct's texture field on
-    // Toggle to 4x vram with an inner array of 4 u8s per pixel for RGBA color data
-    // Toggle to 4x vram write function in DXYN
-    // Toggle to either RGBA renderer in draw function below
-
     let texture_creator = display.canvas.texture_creator();
     let mut texture = texture_creator
         .create_texture_streaming(PixelFormatEnum::RGBA8888, CHIP8_WIDTH, CHIP8_HEIGHT)

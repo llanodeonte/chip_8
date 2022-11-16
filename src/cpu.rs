@@ -1,7 +1,4 @@
 //Module Todo:
-// Remove temporary pieces for display testing:
-//     - CLI sprite display in DXYN()
-//     - x and y coord test print in DXYN()
 // Continue implementing instruction functions and match conditional
 // Build timer functions
 
@@ -25,7 +22,6 @@ pub struct Cpu {
     v: [u8; 16],
     stack: [u16; 16], //Keep stack an array for now. Use vector if issues arise.
     pub vram: [u8; 32 * 64 * 4], // RGBA VRAM (Height: 32, Width: 64, RGBA: 4)
-    // pub vram: [[u8; 64]; 32], //Legacy VRAM
     // dt: u8, //Todo: Implement Delay Timer
     // st: u8, //Todo: Implement Sound Timer
 }
@@ -39,7 +35,6 @@ impl Cpu {
             v: [0; 16],
             stack: [0; 16],
             vram: [0; 8192], // RGBA VRAM
-            // vram: [[0; 64]; 32], // Legacy VRAM
             // dt: 0,
             // st: 0,
         }
@@ -134,11 +129,6 @@ impl Cpu {
                 for rgba in 0..4 {
                     // RGBA VRAM Clear
                     self.vram[(height * 64 * 4) + (width * 4) + rgba] = 0;
-
-                    // // Legacy VRAM Clear
-                    // self.vram[height][width] = 0;
-                    
-                    // self.vram_update = true;
                 }
             }
         }
@@ -251,37 +241,15 @@ impl Cpu {
                     if rgba == 3 {
                         // Write A of RGBA to VRAM
                         self.vram[((y_coord + byte) * 64 * 4) + ((x_coord + bit) * 4) + (3 - rgba)] = 255;
-
-                        // // Legacy VRAM Alpha Channel Write
-                        // self.vram[byte + y_coord][(bit * rgba) + x_coord] = 255;
                     }
                     else {
                         // Write RGB of RGBA to VRAM
                         self.vram[((y_coord + byte) * 64 * 4) + ((x_coord + bit) * 4) + (3 - rgba)] =
                             ((ram.mem[self.i + byte] >> (7 - bit)) & 0b0000_0001) * 255;
-
-                        // // Legacy VRAM Bit Color Write
-                        // self.vram[byte + y_coord][(bit * rgba) + x_coord] = 
-                        //     ((ram.mem[self.i + byte] >> (7 - bit)) & 0b0000_0001) * 255;
                     }
                 }
             }
         }
-
-        // // Legacy VRAM
-        // for byte in 0..n {
-        //     for bit in 0..8 {
-        //         self.vram[byte + y_coord][bit + x_coord] = (ram.mem[self.i + byte] >> (7 - bit)) & 0b0000_0001;
-
-        //         // CLI debug display of the sprite pulled from ram
-        //         // match self.vram[byte + y_coord][bit + x_coord] {
-        //         //     1 => print!("#"),
-        //         //     0 => print!(" "),
-        //         //     _ => println!("Invalid print target"),
-        //         // }
-        //     }
-        //     // println!();
-        // }
     }
 
     // Write values from ram at i through i+x into v0 through vx
