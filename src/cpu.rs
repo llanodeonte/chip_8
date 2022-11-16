@@ -217,28 +217,24 @@ impl Cpu {
         self.write_v(x, self.read_v(x) ^ self.read_v(y));
     }
 
-    // If vx + vy overflows u8, set vf = 1 and set vx = vx + vy
-    //                    Else, set vf = 0 and set vx = vx + vy
+    // If vx + vy overflows u8, set vf = 1; Else, set vf = 0; Then, set vx = vx + vy
     fn opcode_8xy4(&mut self, x: usize, y: usize) {
         if self.read_v(x) as usize + self.read_v(y) as usize> 0xFF {
             self.write_v(0xF, 1);
-            self.write_v(x, self.read_v(x).wrapping_add(self.read_v(y)));
         } else {
             self.write_v(0xF, 0);
-            self.write_v(x, self.read_v(x) + self.read_v(y));
         }
+        self.write_v(x, self.read_v(x).wrapping_add(self.read_v(y)));
     }
 
-    // If vx > vy, set vf = 1 and set vx = vx - vy
-    //       Else, set vf = 0 and set vx = vx - vy
+    // If vx > vy, set vf = 1; Else, set vf = 0; Then, set vx = vx - vy
     fn opcode_8xy5(&mut self, x: usize, y: usize) {
         if self.read_v(x) > self.read_v(y) {
             self.write_v(0xF, 1);
-            self.write_v(x, self.read_v(x) - self.read_v(y));
         } else {
             self.write_v(0xF, 0);
-            self.write_v(x, self.read_v(x).wrapping_sub(self.read_v(y)));
         }
+        self.write_v(x, self.read_v(x).wrapping_sub(self.read_v(y)));
     }
 
     // If vx != vy, skip the next opcode
