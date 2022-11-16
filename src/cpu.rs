@@ -26,7 +26,6 @@ pub struct Cpu {
     stack: [u16; 16], //Keep stack an array for now. Use vector if issues arise.
     pub vram: [u8; 32 * 64 * 4], // RGBA VRAM (Height: 32, Width: 64, RGBA: 4)
     // pub vram: [[u8; 64]; 32], //Legacy VRAM
-    // pub vram_update: bool,
     // dt: u8, //Todo: Implement Delay Timer
     // st: u8, //Todo: Implement Sound Timer
 }
@@ -41,7 +40,6 @@ impl Cpu {
             stack: [0; 16],
             vram: [0; 8192], // RGBA VRAM
             // vram: [[0; 64]; 32], // Legacy VRAM
-            // vram_update: false,
             // dt: 0,
             // st: 0,
         }
@@ -74,7 +72,6 @@ impl Cpu {
     }
 
     pub fn tick(&mut self, ram: &Ram) {
-        // self.vram_update = false;
         let current_opcode = self.fetch_opcode(&ram);
         self.execute_opcode(&ram, &current_opcode);
     }
@@ -285,8 +282,6 @@ impl Cpu {
         //     }
         //     // println!();
         // }
-
-        // self.vram_update = true;
     }
 
     // Write values from ram at i through i+x into v0 through vx

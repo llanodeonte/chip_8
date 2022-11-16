@@ -8,7 +8,6 @@
 
 //Module Todo:
 // Incorporate timer into game loop
-// Remove legacy loop once happy with 60Hz loop
 
 extern crate sdl2;
 
@@ -74,7 +73,7 @@ fn main() {
             }
         }
 
-        // New 60Hz loop that draws once per 60 cpu ticks
+        // 60Hz loop that draws once per 60 cpu ticks
         for _hertz in 0..60 {
             cpu.tick(&ram);
         }
@@ -82,13 +81,5 @@ fn main() {
         display.draw(&cpu, &mut texture);
         // Temp sleep to display screen before panic
         thread::sleep(time::Duration::from_millis(3000));
-
-        // Legacy loop that draws per each vram update
-        // cpu.tick(&ram);
-
-        // if cpu.vram_update {
-        //     display.draw(&cpu);
-        //     thread::sleep(time::Duration::from_millis(200));
-        // }
     }
 }
