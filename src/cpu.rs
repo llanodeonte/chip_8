@@ -204,16 +204,18 @@ impl Cpu {
         self.write_v(x, self.read_v(x) ^ self.read_v(y));
     }
 
-    // Set vf = evaluation of ((vx + vy) > 255) and set vx = vx + vy
+    // Set vx = vx + vy and set vf = carry bit
     fn opcode_8xy4(&mut self, x: usize, y: usize) {
-        self.write_v(0xF, ((self.read_v(x) as u16 + self.read_v(y) as u16) > 0xFF) as u8);
-        self.write_v(x, self.read_v(x).wrapping_add(self.read_v(y)));
+        let (v_sum, carry_flag) = self.read_v(x).overflowing_add(self.read_v(y));
+        self.write_v(0xF, carry_flag as u8);
+        self.write_v(x, v_sum);
     }
 
-    // Set vf = evaluation of (vx > vy) and set vx = vx - vy
+    // Set vx = vx - vy and set vf = carry bit
     fn opcode_8xy5(&mut self, x: usize, y: usize) {
-        self.write_v(0xF, (self.read_v(x) > self.read_v(y)) as u8);
-        self.write_v(x, self.read_v(x).wrapping_sub(self.read_v(y)));
+        let (v_diff, carry_flag) = self.read_v(x).overflowing_sub(self.read_v(y));
+        self.write_v(0xF, carry_flag as u8);
+        self.write_v(x, v_diff);
     }
 
     // If vx != vy, skip the next opcode
