@@ -280,11 +280,10 @@ impl Cpu {
         }
     }
 
-    // Write values from ram at i through i+x into v0 through vx
+    // Store values from memory starting at location i in registers v0 through vx
     fn opcode_fx65(&mut self, ram: &Ram, x: usize) {
         for vreg in 0..(x + 1) {
-            let data = ram.mem[self.i + vreg];
-            self.write_v(x, data);
+            self.write_v(vreg, ram.read_ram(self.i + vreg));
         }
     }
 }
