@@ -67,7 +67,7 @@ fn main() {
 
         // 60Hz loop that draws once per 60 cpu ticks
         for _hertz in 0..60 {
-            cpu.tick(&ram);
+            cpu.tick(&mut ram);
         }
 
         display.draw(&cpu, &mut texture);

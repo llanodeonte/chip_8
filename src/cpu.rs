@@ -66,9 +66,9 @@ impl Cpu {
         self.v[addr] = data;
     }
 
-    pub fn tick(&mut self, ram: &Ram) {
-        let current_opcode = self.fetch_opcode(&ram);
-        self.execute_opcode(&ram, &current_opcode);
+    pub fn tick(&mut self, ram: &mut Ram) {
+        let current_opcode = self.fetch_opcode(ram);
+        self.execute_opcode(ram, &current_opcode);
     }
 
     pub fn fetch_opcode(&mut self, ram: &Ram) -> u16 {
@@ -77,7 +77,7 @@ impl Cpu {
         opcode
     }
 
-    pub fn execute_opcode(&mut self, ram: &Ram, current_opcode: &u16) {
+    pub fn execute_opcode(&mut self, ram: &mut Ram, current_opcode: &u16) {
         //Represent the nibbles of the current instruction as a series of tuple values 
         let opcode_nibbles = (
             //Use bitwise and to zero out everything other than the focus nibble
@@ -114,8 +114,9 @@ impl Cpu {
             (0x08,    _,    _, 0x0E) => self.opcode_8xye(x),
             (0x09,    _,    _, 0x00) => self.opcode_9xy0(x, y),
             (0x0A,    _,    _,    _) => self.opcode_annn(nnn),
-            (0x0D,    _,    _,    _) => self.opcode_dxyn(&ram, x, y, n),
-            (0x0F,    _, 0x06, 0x05) => self.opcode_fx65(&ram, x),
+            (0x0D,    _,    _,    _) => self.opcode_dxyn(ram, x, y, n),
+            (0x0F,    _, 0x05, 0x05) => self.opcode_fx55(ram, x),
+            (0x0F,    _, 0x06, 0x05) => self.opcode_fx65(ram, x),
             _ => panic!("Unknown opcode {:X?} at PC {:X?}", current_opcode, self.pc),
         };
 
@@ -269,6 +270,13 @@ impl Cpu {
                     }
                 }
             }
+        }
+    }
+
+    // Store registers V0 through Vx in memory starting at location I
+    fn opcode_fx55(&self, ram: &mut Ram, x: usize) {
+        for vreg in 0..(x + 1) {
+            ram.write_ram(self.i + vreg, self.read_v(vreg));
         }
     }
 
