@@ -115,6 +115,7 @@ impl Cpu {
             (0x09,    _,    _, 0x00) => self.opcode_9xy0(x, y),
             (0x0A,    _,    _,    _) => self.opcode_annn(nnn),
             (0x0D,    _,    _,    _) => self.opcode_dxyn(ram, x, y, n),
+            (0x0F,    _, 0x03, 0x03) => self.opcode_fx33(ram, x),
             (0x0F,    _, 0x05, 0x05) => self.opcode_fx55(ram, x),
             (0x0F,    _, 0x06, 0x05) => self.opcode_fx65(ram, x),
             _ => panic!("Unknown opcode {:X?} at PC {:X?}", current_opcode, self.pc),
@@ -271,6 +272,18 @@ impl Cpu {
                 }
             }
         }
+    }
+
+    // Store BCD representation of vx in memory locations i, i+1, and i+2
+    fn opcode_fx33(&self, ram: &mut Ram, x: usize) {
+        let val = self.read_v(x);
+        let hunds = val / 100;
+        let tens = (val / 10) % 10;
+        let ones = val % 10;
+
+        ram.write_ram(self.i, hunds);
+        ram.write_ram(self.i + 1, tens);
+        ram.write_ram(self.i + 2, ones);
     }
 
     // Store registers V0 through Vx in memory starting at location I
