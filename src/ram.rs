@@ -34,4 +34,12 @@ impl Ram {
     // pub fn write_byte(&mut self, cpu: Cpu, byte: u8) {
     //     self.mem[cpu.i] = byte;
     // }
+
+    pub fn read_ram(&self, addr: usize) -> u8 {
+        self.mem[addr]
+    }
+
+    pub fn write_ram(&mut self, addr: usize, data: u8) {
+        self.mem[addr] = data;
+    }
 }
