@@ -231,23 +231,25 @@ impl Cpu {
     }
 
     // Write sprite from ram to vram
-    // Add detailed comments to code below
     fn opcode_dxyn(&mut self, ram: &Ram, x: usize, y: usize, n: usize) {
         let x_coord = self.read_v(x) as usize;
         let y_coord = self.read_v(y) as usize;
 
         // RGBA VRAM
-        for byte in 0..n {
-            for bit in 0..8 {
-                for rgba in 0..4 {
+        for byte in 0..n { // sprite height
+            for bit in 0..8 { // sprite width
+                for rgba in 0..4 { // pixel bit expanded to 4 rgba pixels
+                    let screen_row = (y_coord + byte) * 64 * 4;
+                    let rgba_pixel = (x_coord + bit) * 4;
+                    let rgba_byte = 3 - rgba;
+
                     if rgba == 3 {
                         // Write A of RGBA to VRAM
-                        self.vram[((y_coord + byte) * 64 * 4) + ((x_coord + bit) * 4) + (3 - rgba)] = 255;
-                    }
-                    else {
+                        self.vram[screen_row + rgba_pixel + rgba_byte] = 255;
+                    } else {
                         // Write RGB of RGBA to VRAM
-                        self.vram[((y_coord + byte) * 64 * 4) + ((x_coord + bit) * 4) + (3 - rgba)] =
-                            ((ram.mem[self.i + byte] >> (7 - bit)) & 0b0000_0001) * 255;
+                        self.vram[screen_row + rgba_pixel + rgba_byte] =
+                            ((ram.mem[self.i + byte] >> (7 - bit)) & 0b1) * 255;
                     }
                 }
             }
