@@ -17,7 +17,7 @@ use sdl2::pixels::PixelFormatEnum;
 
 use std::{
     thread,
-    time,
+    time::Duration,
 };
 
 mod cpu;
@@ -72,6 +72,6 @@ fn main() {
 
         display.draw(&cpu, &mut texture);
         // Temp sleep to display screen before panic
-        thread::sleep(time::Duration::from_millis(3000));
+        thread::sleep(Duration::from_millis(3000));
     }
 }
