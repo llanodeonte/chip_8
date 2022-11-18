@@ -120,6 +120,7 @@ impl Cpu {
             (0x08,    _,    _, 0x0E) => self.opcode_8xye(x),
             (0x09,    _,    _, 0x00) => self.opcode_9xy0(x, y),
             (0x0A,    _,    _,    _) => self.opcode_annn(nnn),
+            (0x0B,    _,    _,    _) => self.opcode_bnnn(nnn, x),
             (0x0D,    _,    _,    _) => self.opcode_dxyn(ram, x, y, n),
             (0x0E,    _, 0x09, 0x0E) => self.opcode_ex9e(key_pressed, keypad, x),
             (0x0E,    _, 0x0A, 0x01) => self.opcode_exa1(key_pressed, keypad, x),
@@ -268,6 +269,12 @@ impl Cpu {
     // Set i = nnn
     fn opcode_annn(&mut self, nnn: usize) {
         self.set_i(nnn);
+    }
+
+    // Jump to address nnn + value of vx
+    fn opcode_bnnn(&mut self, nnn: usize, x: usize) {
+        let addr = nnn + self.read_v(x) as usize;
+        self.set_pc(ProgramCounter::Jump(addr));
     }
 
     // Write sprite from ram to vram
