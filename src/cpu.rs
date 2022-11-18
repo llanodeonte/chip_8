@@ -125,7 +125,7 @@ impl Cpu {
             (0x0F,    _, 0x00, 0x07) => self.opcode_fx07(x),
             (0x0F,    _, 0x00, 0x0A) => self.opcode_fx0a(key_pressed, keypad, x),
             (0x0F,    _, 0x01, 0x05) => self.opcode_fx15(x),
-            (0x0F,    _, 0x01, 0x0E) => self.opcode_fx1e(ram, x),
+            (0x0F,    _, 0x01, 0x0E) => self.opcode_fx1e(x),
             (0x0F,    _, 0x03, 0x03) => self.opcode_fx33(ram, x),
             (0x0F,    _, 0x05, 0x05) => self.opcode_fx55(ram, x),
             (0x0F,    _, 0x06, 0x05) => self.opcode_fx65(ram, x),
@@ -369,8 +369,8 @@ impl Cpu {
 
     // Set i = i + vx
     // If i overflows ram (0xFFF), set vf = 1 (Add when needed)
-    fn opcode_fx1e(&self, ram: &mut Ram, x: usize) {
-        ram.write_ram(self.i, ram.read_ram(self.i).wrapping_add(self.read_v(x)));
+    fn opcode_fx1e(&mut self, x: usize) {
+        self.i += self.read_v(x) as usize;
     }
 
     // Store BCD representation of vx in memory locations i, i+1, and i+2
