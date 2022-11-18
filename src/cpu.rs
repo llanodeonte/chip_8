@@ -23,7 +23,7 @@ pub struct Cpu {
     v: [u8; 16],
     stack: [u16; 16], //Keep stack an array for now. Use vector if issues arise.
     pub vram: [u8; 32 * 64 * 4], // RGBA VRAM (Height: 32, Width: 64, RGBA: 4)
-    // dt: u8, //Todo: Implement Delay Timer
+    dt: u8, // Delay Timer
     // st: u8, //Todo: Implement Sound Timer
 }
 
@@ -36,7 +36,7 @@ impl Cpu {
             v: [0; 16],
             stack: [0; 16],
             vram: [0; 8192], // RGBA VRAM
-            // dt: 0,
+            dt: 0,
             // st: 0,
         }
     }
@@ -71,6 +71,9 @@ impl Cpu {
     pub fn tick(&mut self, ram: &mut Ram, key_pressed: &bool, keypad: &[bool; 16]) {
         let current_opcode = self.fetch_opcode(ram);
         self.execute_opcode(ram, key_pressed, keypad, &current_opcode);
+        if self.dt > 0 {
+            self.dt -= 1;
+        }
     }
 
     pub fn fetch_opcode(&mut self, ram: &Ram) -> u16 {
@@ -119,7 +122,9 @@ impl Cpu {
             (0x0D,    _,    _,    _) => self.opcode_dxyn(ram, x, y, n),
             (0x0E,    _, 0x09, 0x0E) => self.opcode_ex9e(key_pressed, keypad, x),
             (0x0E,    _, 0x0A, 0x01) => self.opcode_exa1(key_pressed, keypad, x),
+            (0x0F,    _, 0x00, 0x07) => self.opcode_fx07(x),
             (0x0F,    _, 0x00, 0x0A) => self.opcode_fx0a(key_pressed, keypad, x),
+            (0x0F,    _, 0x01, 0x05) => self.opcode_fx15(x),
             (0x0F,    _, 0x01, 0x0E) => self.opcode_fx1e(ram, x),
             (0x0F,    _, 0x03, 0x03) => self.opcode_fx33(ram, x),
             (0x0F,    _, 0x05, 0x05) => self.opcode_fx55(ram, x),
@@ -316,6 +321,11 @@ impl Cpu {
         }
     }
 
+    // Set vx = dt
+    fn opcode_fx07(&mut self, x: usize) {
+        self.write_v(x, self.dt);
+    }
+
     // If key not pressed, decrement pc to loop; Else, set vx = key's Chip 8 hex value
     fn opcode_fx0a(&mut self, key_pressed: &bool, keypad: &[bool; 16], x: usize) {
         if !key_pressed {
@@ -331,6 +341,11 @@ impl Cpu {
                 }
             }
         }
+    }
+
+    // Set dt = vx
+    fn opcode_fx15(&mut self, x: usize) {
+        self.dt = self.read_v(x);
     }
 
     // Set i = i + vx
