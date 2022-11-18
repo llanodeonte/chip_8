@@ -387,14 +387,14 @@ impl Cpu {
 
     // Store registers V0 through Vx in memory starting at location I
     fn opcode_fx55(&self, ram: &mut Ram, x: usize) {
-        for vreg in 0..(x + 1) {
+        for vreg in 0..=x {
             ram.write_ram(self.i + vreg, self.read_v(vreg));
         }
     }
 
     // Store values from memory starting at location i in registers v0 through vx
     fn opcode_fx65(&mut self, ram: &Ram, x: usize) {
-        for vreg in 0..(x + 1) {
+        for vreg in 0..=x {
             self.write_v(vreg, ram.read_ram(self.i + vreg));
         }
     }
