@@ -270,8 +270,8 @@ impl Cpu {
         for byte in 0..n { // sprite height
             for bit in 0..8 { // sprite width
                 for rgba in 0..4 { // pixel bit expanded to 4 rgba pixels
-                    let screen_row = (y_coord + byte) * 64 * 4;
-                    let rgba_pixel = (x_coord + bit) * 4;
+                    let screen_row = ((y_coord + byte) * 64 * 4) % (32 * 64 * 4);
+                    let rgba_pixel = ((x_coord + bit) * 4) % (64 * 4);
                     let rgba_byte = 3 - rgba;
                     let vram_index = screen_row + rgba_pixel + rgba_byte;
 
