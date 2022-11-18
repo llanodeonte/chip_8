@@ -232,7 +232,7 @@ impl Cpu {
     // Set vx = vx - vy and set vf = carry bit
     fn opcode_8xy5(&mut self, x: usize, y: usize) {
         let (v_diff, carry_flag) = self.read_v(x).overflowing_sub(self.read_v(y));
-        self.write_v(0xF, carry_flag as u8);
+        self.write_v(0xF, !carry_flag as u8);
         self.write_v(x, v_diff);
     }
 
