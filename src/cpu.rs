@@ -151,7 +151,9 @@ impl Cpu {
 
     // Return from a subroutine
     fn opcode_00ee(&mut self) {
-        self.sp -= 1;
+        if self.sp > 0 {
+            self.sp -= 1;
+        }
         self.pc = self.stack[self.sp] as usize;
         self.stack[self.sp] = 0;
     }
