@@ -271,14 +271,31 @@ impl Cpu {
                     let screen_row = (y_coord + byte) * 64 * 4;
                     let rgba_pixel = (x_coord + bit) * 4;
                     let rgba_byte = 3 - rgba;
+                    let vram_index = screen_row + rgba_pixel + rgba_byte;
 
+                    // Set VRAM A bytes of RGBA to on
                     if rgba == 3 {
-                        // Write A of RGBA to VRAM
-                        self.vram[screen_row + rgba_pixel + rgba_byte] = 255;
+                        self.vram[vram_index] = 0xFF;
+                    // Toggle VRAM RGB bytes using RGB of RGBA 
                     } else {
-                        // Write RGB of RGBA to VRAM
-                        self.vram[screen_row + rgba_pixel + rgba_byte] =
-                            ((ram.mem[self.i + byte] >> (7 - bit)) & 0b1) * 255;
+                        let sprite_bit = ram.mem[self.i + byte] >> (7 -bit) &0b1;
+
+                        // Vram byte will toggle
+                        if sprite_bit > 0 {
+                            // If vram byte will toggle 1 to 0, set vf = 1
+                            if self.vram[vram_index] > 0 {
+                                self.write_v(0xF, 1);
+                            // If vram byte will toggle 0 to 1, set vf = 0
+                            } else {
+                                self.write_v(0xF, 0);
+                            }
+                            self.vram[vram_index] =
+                                self.vram[vram_index] ^ (sprite_bit * 0xFF);
+                        // Vram byte will not toggle
+                        } else {
+                            // Set vf = 0
+                            self.write_v(0xF, 0);
+                        }
                     }
                 }
             }
