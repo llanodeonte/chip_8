@@ -117,6 +117,8 @@ impl Cpu {
             (0x09,    _,    _, 0x00) => self.opcode_9xy0(x, y),
             (0x0A,    _,    _,    _) => self.opcode_annn(nnn),
             (0x0D,    _,    _,    _) => self.opcode_dxyn(ram, x, y, n),
+            (0x0E,    _, 0x09, 0x0E) => self.opcode_ex9e(key_pressed, keypad, x),
+            (0x0E,    _, 0x0A, 0x01) => self.opcode_exa1(key_pressed, keypad, x),
             (0x0F,    _, 0x00, 0x0A) => self.opcode_fx0a(key_pressed, keypad, x),
             (0x0F,    _, 0x01, 0x0E) => self.opcode_fx1e(ram, x),
             (0x0F,    _, 0x03, 0x03) => self.opcode_fx33(ram, x),
@@ -273,6 +275,42 @@ impl Cpu {
                         self.vram[screen_row + rgba_pixel + rgba_byte] =
                             ((ram.mem[self.i + byte] >> (7 - bit)) & 0b1) * 255;
                     }
+                }
+            }
+        }
+    }
+
+    // If key with value of vx is pressed, skip the next opcode
+    fn opcode_ex9e(&mut self, key_pressed: &bool, keypad: &[bool; 16], x: usize) {
+        if *key_pressed {
+            let x_val = self.read_v(x);
+
+            'ex9e_key_check: for (i, key) in keypad.iter().enumerate() {
+                if i == x_val as usize {
+                    if *key {
+                        self.set_pc(ProgramCounter::Next);
+                    }
+
+                    break 'ex9e_key_check;
+                }
+            }
+        }
+    }
+
+    // If key with value of vx is not pressed, skip the next opcode
+    fn opcode_exa1(&mut self, key_pressed: &bool, keypad: &[bool; 16], x: usize) {
+        if !key_pressed {
+            self.set_pc(ProgramCounter::Next);
+        } else {
+            let x_val = self.read_v(x);
+
+            'exa1_key_check: for (i, key) in keypad.iter().enumerate() {
+                if i == x_val as usize {
+                    if !key {
+                        self.set_pc(ProgramCounter::Next);
+                    }
+
+                    break 'exa1_key_check;
                 }
             }
         }
