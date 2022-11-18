@@ -238,9 +238,9 @@ impl Cpu {
 
     // Set vx = vx right shift 1 bit and set vf = carry bit
     fn opcode_8xy6(&mut self, x: usize) {
-        let(v_rshift, carry_flag) = self.read_v(x).overflowing_shr(1);
-        self.write_v(x, v_rshift);
-        self.write_v(0xF, carry_flag as u8);
+        let vreg = self.read_v(x);
+        self.write_v(x, vreg >> 1);
+        self.write_v(0xF, vreg & 0b1);
     }
 
     // Set vx = vy - vx and set vf = carry bit
@@ -252,9 +252,10 @@ impl Cpu {
     
     // Set vx = vx left shift 1 bit and set vf = carry bit
     fn opcode_8xye(&mut self, x: usize) {
-        let(v_lshift, carry_flag) = self.read_v(x).overflowing_shl(1);
-        self.write_v(x, v_lshift);
-        self.write_v(0xF, carry_flag as u8);
+        let vreg = self.read_v(x);
+        self.write_v(x, vreg << 1);
+        self.write_v(0xF, (vreg >> 7) & 0b1);
+
     }
 
     // If vx != vy, skip the next opcode
