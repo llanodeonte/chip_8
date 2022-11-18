@@ -116,6 +116,7 @@ impl Cpu {
             (0x08,    _,    _, 0x04) => self.opcode_8xy4(x, y),
             (0x08,    _,    _, 0x05) => self.opcode_8xy5(x, y),
             (0x08,    _,    _, 0x06) => self.opcode_8xy6(x),
+            (0x08,    _,    _, 0x07) => self.opcode_8xy7(x, y),
             (0x08,    _,    _, 0x0E) => self.opcode_8xye(x),
             (0x09,    _,    _, 0x00) => self.opcode_9xy0(x, y),
             (0x0A,    _,    _,    _) => self.opcode_annn(nnn),
@@ -240,6 +241,13 @@ impl Cpu {
         let(v_rshift, carry_flag) = self.read_v(x).overflowing_shr(1);
         self.write_v(0xF, carry_flag as u8);
         self.write_v(x, v_rshift);
+    }
+
+    // Set vx = vy - vx and set vf = carry bit
+    fn opcode_8xy7(&mut self, x: usize, y: usize) {
+        let (v_diff, carry_flag) = self.read_v(y).overflowing_sub(self.read_v(x));
+        self.write_v(0xF, !carry_flag as u8);
+        self.write_v(x, v_diff);
     }
     
     // Set vx = vx left shift 1 bit and set vf = carry bit
