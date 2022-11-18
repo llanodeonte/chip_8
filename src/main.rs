@@ -106,7 +106,7 @@ fn main() {
                     key_pressed = true;
                 }
             }
-        };
+        }
         
         // let new_keys = &keys - &prev_keys;
         // let old_keys = &prev_keys - &keys;
@@ -118,12 +118,12 @@ fn main() {
 
         // 60Hz loop that draws once per 60 cpu ticks
         for _hertz in 0..60 {
-            cpu.tick(&mut ram);
+            cpu.tick(&mut ram, &key_pressed, &keypad);
         }
 
         display.draw(&cpu, &mut texture);
         // Temp sleep to display screen before panic
-        thread::sleep(Duration::from_millis(3000));
+        thread::sleep(Duration::from_millis(100));
 
         // prev_keys = keys;
     }

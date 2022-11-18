@@ -1,5 +1,5 @@
 //Module Todo:
-// Continue implementing instruction functions and match conditional
+// Continue implementing opcodes and match statements
 // Build timer functions
 
 use crate::{
@@ -12,6 +12,7 @@ const OPCODE_INTERVAL: usize = 2;
 #[derive(Clone, Copy)]
 enum ProgramCounter {
     Next,
+    Prev,
     Jump(usize),
 }
 
@@ -50,6 +51,7 @@ impl Cpu {
     fn set_pc(&mut self, addr: ProgramCounter) {
         self.pc = match addr {
             ProgramCounter::Next => self.pc + OPCODE_INTERVAL,
+            ProgramCounter::Prev => self.pc - OPCODE_INTERVAL,
             ProgramCounter::Jump(addr) => addr,
         };
     }
@@ -66,9 +68,9 @@ impl Cpu {
         self.v[addr] = data;
     }
 
-    pub fn tick(&mut self, ram: &mut Ram) {
+    pub fn tick(&mut self, ram: &mut Ram, key_pressed: &bool, keypad: &[bool; 16]) {
         let current_opcode = self.fetch_opcode(ram);
-        self.execute_opcode(ram, &current_opcode);
+        self.execute_opcode(ram, key_pressed, keypad, &current_opcode);
     }
 
     pub fn fetch_opcode(&mut self, ram: &Ram) -> u16 {
@@ -77,7 +79,7 @@ impl Cpu {
         opcode
     }
 
-    pub fn execute_opcode(&mut self, ram: &mut Ram, current_opcode: &u16) {
+    pub fn execute_opcode(&mut self, ram: &mut Ram, key_pressed: &bool, keypad: &[bool; 16], current_opcode: &u16) {
         //Represent the nibbles of the current instruction as a series of tuple values 
         let opcode_nibbles = (
             //Use bitwise and to zero out everything other than the focus nibble
@@ -115,6 +117,7 @@ impl Cpu {
             (0x09,    _,    _, 0x00) => self.opcode_9xy0(x, y),
             (0x0A,    _,    _,    _) => self.opcode_annn(nnn),
             (0x0D,    _,    _,    _) => self.opcode_dxyn(ram, x, y, n),
+            (0x0F,    _, 0x00, 0x0A) => self.opcode_fx0a(key_pressed, keypad, x),
             (0x0F,    _, 0x01, 0x0E) => self.opcode_fx1e(ram, x),
             (0x0F,    _, 0x03, 0x03) => self.opcode_fx33(ram, x),
             (0x0F,    _, 0x05, 0x05) => self.opcode_fx55(ram, x),
@@ -270,6 +273,23 @@ impl Cpu {
                         self.vram[screen_row + rgba_pixel + rgba_byte] =
                             ((ram.mem[self.i + byte] >> (7 - bit)) & 0b1) * 255;
                     }
+                }
+            }
+        }
+    }
+
+    // If key not pressed, decrement pc to loop; Else, set vx = key's Chip 8 hex value
+    fn opcode_fx0a(&mut self, key_pressed: &bool, keypad: &[bool; 16], x: usize) {
+        if !key_pressed {
+            self.set_pc(ProgramCounter::Prev);
+        } else {
+            'key_assign: for (i, key) in keypad.iter().enumerate() {
+                if *key {
+                    self.write_v(x, i as u8);
+
+                    // Breaks for loop after first key match
+                    // Todo: Find better method
+                    break 'key_assign;
                 }
             }
         }
