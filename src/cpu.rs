@@ -257,7 +257,6 @@ impl Cpu {
         let vreg = self.read_v(x);
         self.write_v(x, vreg << 1);
         self.write_v(0xF, (vreg >> 7) & 0b1);
-
     }
 
     // If vx != vy, skip the next opcode
