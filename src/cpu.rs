@@ -3,7 +3,8 @@
 // Build timer functions
 
 use crate::{
-    ram::Ram, 
+    ram::Ram,
+    input::Keypad,
     ROM_START,
 };
 
@@ -68,9 +69,9 @@ impl Cpu {
         self.v[addr] = data;
     }
 
-    pub fn tick(&mut self, ram: &mut Ram, key_pressed: &bool, keypad: &[bool; 16]) {
+    pub fn tick(&mut self, ram: &mut Ram, keypad: &Keypad) {
         let current_opcode = self.fetch_opcode(ram);
-        self.execute_opcode(ram, key_pressed, keypad, &current_opcode);
+        self.execute_opcode(ram, keypad, &current_opcode);
         if self.dt > 0 {
             self.dt -= 1;
         }
@@ -82,7 +83,7 @@ impl Cpu {
         opcode
     }
 
-    pub fn execute_opcode(&mut self, ram: &mut Ram, key_pressed: &bool, keypad: &[bool; 16], current_opcode: &u16) {
+    pub fn execute_opcode(&mut self, ram: &mut Ram, keypad: &Keypad, current_opcode: &u16) {
         //Represent the nibbles of the current instruction as a series of tuple values 
         let opcode_nibbles = (
             //Use bitwise and to zero out everything other than the focus nibble
@@ -122,10 +123,10 @@ impl Cpu {
             (0x0A,    _,    _,    _) => self.opcode_annn(nnn),
             (0x0B,    _,    _,    _) => self.opcode_bnnn(nnn, x),
             (0x0D,    _,    _,    _) => self.opcode_dxyn(ram, x, y, n),
-            (0x0E,    _, 0x09, 0x0E) => self.opcode_ex9e(key_pressed, keypad, x),
-            (0x0E,    _, 0x0A, 0x01) => self.opcode_exa1(key_pressed, keypad, x),
+            (0x0E,    _, 0x09, 0x0E) => self.opcode_ex9e(keypad, x),
+            (0x0E,    _, 0x0A, 0x01) => self.opcode_exa1(keypad, x),
             (0x0F,    _, 0x00, 0x07) => self.opcode_fx07(x),
-            (0x0F,    _, 0x00, 0x0A) => self.opcode_fx0a(key_pressed, keypad, x),
+            (0x0F,    _, 0x00, 0x0A) => self.opcode_fx0a(keypad, x),
             (0x0F,    _, 0x01, 0x05) => self.opcode_fx15(x),
             (0x0F,    _, 0x01, 0x0E) => self.opcode_fx1e(x),
             (0x0F,    _, 0x03, 0x03) => self.opcode_fx33(ram, x),
@@ -321,11 +322,11 @@ impl Cpu {
     }
 
     // If key with value of vx is pressed, skip the next opcode
-    fn opcode_ex9e(&mut self, key_pressed: &bool, keypad: &[bool; 16], x: usize) {
-        if *key_pressed {
+    fn opcode_ex9e(&mut self, keypad: &Keypad, x: usize) {
+        if keypad.key_pressed {
             let x_val = self.read_v(x);
 
-            'ex9e_key_check: for (i, key) in keypad.iter().enumerate() {
+            'ex9e_key_check: for (i, key) in keypad.keypad.iter().enumerate() {
                 if i == x_val as usize {
                     if *key {
                         self.set_pc(ProgramCounter::Next);
@@ -338,13 +339,13 @@ impl Cpu {
     }
 
     // If key with value of vx is not pressed, skip the next opcode
-    fn opcode_exa1(&mut self, key_pressed: &bool, keypad: &[bool; 16], x: usize) {
-        if !key_pressed {
+    fn opcode_exa1(&mut self, keypad: &Keypad, x: usize) {
+        if !keypad.key_pressed {
             self.set_pc(ProgramCounter::Next);
         } else {
             let x_val = self.read_v(x);
 
-            'exa1_key_check: for (i, key) in keypad.iter().enumerate() {
+            'exa1_key_check: for (i, key) in keypad.keypad.iter().enumerate() {
                 if i == x_val as usize {
                     if !key {
                         self.set_pc(ProgramCounter::Next);
@@ -362,11 +363,11 @@ impl Cpu {
     }
 
     // If key not pressed, decrement pc to loop; Else, set vx = key's Chip 8 hex value
-    fn opcode_fx0a(&mut self, key_pressed: &bool, keypad: &[bool; 16], x: usize) {
-        if !key_pressed {
+    fn opcode_fx0a(&mut self, keypad: &Keypad, x: usize) {
+        if !keypad.key_pressed {
             self.set_pc(ProgramCounter::Prev);
         } else {
-            'key_assign: for (i, key) in keypad.iter().enumerate() {
+            'key_assign: for (i, key) in keypad.keypad.iter().enumerate() {
                 if *key {
                     self.write_v(x, i as u8);
 
