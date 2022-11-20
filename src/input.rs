@@ -9,6 +9,8 @@ pub struct Keypad {
     pub keypad: [bool; 16],
     pub key_pressed: bool,
     keys: HashSet<Keycode>,
+    pub key_held: bool,
+    pub key_index: usize,
 }
 
 impl Keypad {
@@ -17,6 +19,8 @@ impl Keypad {
             keypad: [false; 16],
             key_pressed: false,
             keys: HashSet::new(),
+            key_held: false,
+            key_index: 0,
         }
     }
 

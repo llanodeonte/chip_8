@@ -1,5 +1,5 @@
 // Current thoughts:
-// Improve the FX0A key press loop
+// Work on test suite quirks
 
 //Current Mod:
 // cpu
@@ -79,7 +79,7 @@ fn main() {
         
         // 60Hz loop that draws once per 60 cpu ticks
         for _hertz in 0..60 {
-            cpu.tick(&mut ram, &keypad);
+            cpu.tick(&mut ram, &mut keypad);
         }
 
         display.draw(&cpu, &mut texture);

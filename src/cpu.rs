@@ -1,4 +1,5 @@
 //Module Todo:
+// Implement base quirks from test suite
 // Continue implementing opcodes and match statements
 // Build timer functions
 
@@ -69,7 +70,7 @@ impl Cpu {
         self.v[addr] = data;
     }
 
-    pub fn tick(&mut self, ram: &mut Ram, keypad: &Keypad) {
+    pub fn tick(&mut self, ram: &mut Ram, keypad: &mut Keypad) {
         let current_opcode = self.fetch_opcode(ram);
         self.execute_opcode(ram, keypad, &current_opcode);
         if self.dt > 0 {
@@ -83,7 +84,7 @@ impl Cpu {
         opcode
     }
 
-    pub fn execute_opcode(&mut self, ram: &mut Ram, keypad: &Keypad, current_opcode: &u16) {
+    pub fn execute_opcode(&mut self, ram: &mut Ram, keypad: &mut Keypad, current_opcode: &u16) {
         //Represent the nibbles of the current instruction as a series of tuple values 
         let opcode_nibbles = (
             //Use bitwise and to zero out everything other than the focus nibble
@@ -361,18 +362,30 @@ impl Cpu {
         self.write_v(x, self.dt);
     }
 
-    // If key not pressed, decrement pc to loop; Else, set vx = key's Chip 8 hex value
-    fn opcode_fx0a(&mut self, keypad: &Keypad, x: usize) {
-        if !keypad.key_pressed {
-            self.set_pc(ProgramCounter::Prev);
+    // If key pressed, set vx = key's Chip 8 hex value, then decrement pc to loop
+    // If pressed key is no longer held, continue; Else, continue to loop
+    fn opcode_fx0a(&mut self, keypad: &mut Keypad, x: usize) {
+        if keypad.key_held {
+            if !keypad.keypad[keypad.key_index] {
+                keypad.key_held = false;
+            } else {
+                self.set_pc(ProgramCounter::Prev);
+            }
         } else {
-            'key_assign: for (i, key) in keypad.keypad.iter().enumerate() {
-                if *key {
-                    self.write_v(x, i as u8);
-
-                    // Breaks for loop after first key match
-                    // Todo: Find better method
-                    break 'key_assign;
+            if !keypad.key_pressed {
+                self.set_pc(ProgramCounter::Prev);
+            } else {
+                'key_assign: for (i, key) in keypad.keypad.iter().enumerate() {
+                    if *key {
+                        self.write_v(x, i as u8);
+                        keypad.key_index = i;
+                        keypad.key_held = true;
+                        self.set_pc(ProgramCounter::Prev);
+    
+                        // Breaks for loop after first key match
+                        // Todo: Find better method for single key matching
+                        break 'key_assign;
+                    }
                 }
             }
         }
