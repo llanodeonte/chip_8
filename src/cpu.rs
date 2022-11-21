@@ -210,19 +210,22 @@ impl Cpu {
         self.write_v(x, self.read_v(y)); 
     }
 
-    // Set vx = vx bitwise or vy
+    // Set vx = vx bitwise or vy, then reset vf to 0
     fn opcode_8xy1(&mut self, x: usize, y: usize) {
         self.write_v(x, self.read_v(x) | self.read_v(y));
+        self.write_v(0xF, 0);
     }
 
-    // Set vx = vx bitwise and vy
+    // Set vx = vx bitwise and vy, then reset vf to 0
     fn opcode_8xy2(&mut self, x: usize, y: usize) {
         self.write_v(x, self.read_v(x) & self.read_v(y));
+        self.write_v(0xF, 0);
     }
 
-    // Set vx = vx bitwise xor vy
+    // Set vx = vx bitwise xor vy, then reset vf to 0
     fn opcode_8xy3(&mut self, x: usize, y: usize) {
         self.write_v(x, self.read_v(x) ^ self.read_v(y));
+        self.write_v(0xF, 0);
     }
 
     // Set vx = vx + vy and set vf = carry bit
